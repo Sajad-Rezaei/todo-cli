@@ -15,7 +15,7 @@ func main() {
 
 	const (
 		network = "tcp"
-		address = "127.0.0.1:1986"
+		address = ":9986"
 	)
 
 	//create new listener
