@@ -30,19 +30,26 @@ func main(){
 	fmt.Println("local address",connection.LocalAddr())
 
 	req:= deliveryparam.Request{Command: message}
-
-	if req.Command=="create-task"{
+	switch req.Command{
+	case "create-task":
 		req.CreateTaskRequest = deliveryparam.CreateTaskRequest{
 			Title: "test",
 			DueDate: "test",
 			CategoryID: 0,
 		}
-	}
-
+	case "create-category":
+		req.CreateCategoryRequest= deliveryparam.CreateCategoryRequest{
+			Title: "test",
+			Color: "test",
+		}	
+	
+	}	
 	serializedData,mErr := json.Marshal(&req)
 	if mErr!=nil{
 		log.Fatalln("can't marshal request",mErr)
+	
 	}
+	
 
 	numberOfWrittenBytes,wErr := connection.Write(serializedData)
 	if wErr!=nil{

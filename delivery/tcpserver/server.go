@@ -7,6 +7,7 @@ import (
 	"net"
 	"todocli/delivery/deliveryparam"
 	"todocli/repository/memorystore"
+	"todocli/service/category"
 	"todocli/service/task"
 )
 
@@ -15,7 +16,7 @@ func main() {
 
 	const (
 		network = "tcp"
-		address = ":9986"
+		address = "127.0.0.1:9986"
 	)
 
 	//create new listener
@@ -29,6 +30,9 @@ func main() {
 
 	taskMemoryRepo:= memorystore.NewTaskStore()
 	taskService := task.NewService(taskMemoryRepo)
+
+	categoryMemoryRepo:= memorystore.NewCategoryStore()
+	catgoryService := category.NewService(categoryMemoryRepo)
 
 	for {
 		//listen for new connection
@@ -90,6 +94,41 @@ func main() {
 
 				continue
 			}
+		case "create-category":
+			response,cErr := catgoryService.Create(category.CreateRequest{
+				Title: req.CreateCategoryRequest.Title,
+				Color: req.CreateCategoryRequest.Color,
+				AuthenticatedUserID: 0,
+			})
+			
+			if cErr!=nil{
+				_,wErr:=connection.Write([]byte(cErr.Error()))
+				if wErr!=nil{
+					log.Println("can't write data to connection",wErr)
+
+					continue
+				}
+			}
+
+			data,mErr:=json.Marshal(response)
+			if mErr!=nil{
+				_,wErr:=connection.Write([]byte(mErr.Error()))
+				if wErr!=nil{
+					log.Println("can't marshal response",wErr)
+
+					continue
+				}
+				continue
+			}
+
+			_,wErr:=connection.Write(data)
+			if wErr!=nil{
+				log.Println("can't write data to connection",wErr)
+
+				continue
+			}
+
+
 		}
 
 		connection.Close()
